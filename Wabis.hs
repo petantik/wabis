@@ -1,24 +1,35 @@
 module Wabis where
 import Control.Monad (liftM2)
-
+import Data.Tuple (swap)
 import Data.Maybe (fromJust)
 
 
 data Direction = North | East | South | West 
 
-type WorldMap = [String] 
+type WorldCharMap = [String] 
+type Pos = (Int, Int) 
+type ItemPos = (WorldItems, Pos)
+type CharItemPair = (Char,WorldItems)
+type ItemCharPair = (WorldItems,Char)
+type World = [ItemPos]
 
-thisWorld :: WorldMap
+thisWorld :: WorldCharMap
 thisWorld =  ["..$....."
              ,"...*..--"
              ,"--....?."
              ,"!...#---"
              ,"..@....."]
 
+data WorldItems = Clear
+                | Wall
+                | Friend
+                | Foe
+                | Neutral
+                | Mystery
+                | Player
+                | Exit
+                | Unknown deriving (Show, Eq)
 
-type Pos = (Int, Int) 
-
-type CharItemPair = (Char,WorldItems)
 
 charItemPairs:: [CharItemPair]
 charItemPairs = [('.',Clear)
@@ -30,32 +41,23 @@ charItemPairs = [('.',Clear)
              ,('@',Player)
              ,('$',Exit)
              ]
-data WorldItems = Clear
-                | Wall
-                | Friend
-                | Foe
-                | Neutral
-                | Mystery
-                | Player
-                | Exit
-                | Unknown deriving (Show, Eq)
 
-type ItemPos = (WorldItems, Pos)
 
-worldW = length (head thisWorld)
-worldH = length thisWorld
-worldCurrent = worldToItemPos thisWorld
+itemCharPairs :: [ItemCharPair]
+itemCharPairs = map swap charItemPairs
 
-worldToItemPos :: WorldMap -> [ItemPos]
-worldToItemPos  = liftM2 zip (concat . worldToItems) (concat . worldToPos) 
 
-worldToItems :: WorldMap -> [[WorldItems]]
-worldToItems =(map . map) charToItem 
+worldDim :: WorldCharMap -> (Int,Int)
+worldDim w = (length . head $ w,length w)
 
-worldToPos :: WorldMap -> [[Pos]]
-worldToPos  w = makeIndexedArray (x,y)
-         where y = length w
-               x = length (w!!1)
+worldCMToWorld :: WorldCharMap -> World
+worldCMToWorld  = liftM2 zip (concat . worldCMToItems) (concat . worldCMToPos) 
+
+worldCMToItems :: WorldCharMap -> [[WorldItems]]
+worldCMToItems =(map . map) charToItem 
+
+worldCMToPos :: WorldCharMap -> [[Pos]]
+worldCMToPos  w = makeIndexedArray . worldDim $ w
 
 makeIndexedArray :: (Int,Int) -> [[Pos]]
 makeIndexedArray (x,y) = zipWith indexHelper ys xs 
@@ -65,19 +67,24 @@ makeIndexedArray (x,y) = zipWith indexHelper ys xs
 indexHelper :: Int -> [Int] -> [Pos]
 indexHelper y  = map (\x -> (x,y)) 
 
-findItem :: WorldItems -> [ItemPos]-> [Pos]
+findItem :: WorldItems -> World-> [Pos]
 findItem wi  = map snd . filter (\x -> fst x == wi) 
 
 charToItem :: Char ->  WorldItems
 charToItem c = fromJust $ lookup c charItemPairs 
 
+itemToChar :: WorldItems -> Char 
+itemToChar wi = fromJust $ lookup wi itemCharPairs 
+
 main :: IO ()
 main = do
-    let playerPos = show $ findItem Player worldCurrent
+    let playerPos = show . findItem Player . worldCMToWorld $ thisWorld
     let currentWorld =  unlines thisWorld
     putStrLn "Hello, Player"
     putStrLn "Enter Game"
     putStrLn ("You are @, standing at "++playerPos++"; exit via $")
     putStrLn currentWorld
 
-    
+
+playerMove :: World -> Direction -> World
+playerMove world d = undefined
