@@ -1,6 +1,8 @@
 module Wabis where
 import Control.Monad (liftM2)
 
+import Data.Maybe (fromJust)
+
 
 data Direction = North | East | South | West 
 
@@ -16,14 +18,16 @@ thisWorld =  ["..$....."
 
 type Pos = (Int, Int) 
 
-charItemPairs:: [(Char,WorldItems)]
+type CharItemPair = (Char,WorldItems)
+
+charItemPairs:: [CharItemPair]
 charItemPairs = [('.',Clear)
              ,('-',Wall)
              ,('#',Friend)
              ,('!',Foe)
              ,('*',Neutral)
              ,('?',Mystery)
-             ,('@',Wall)
+             ,('@',Player)
              ,('$',Exit)
              ]
 data WorldItems = Clear
@@ -62,16 +66,10 @@ indexHelper :: Int -> [Int] -> [Pos]
 indexHelper y  = map (\x -> (x,y)) 
 
 findItem :: WorldItems -> [ItemPos]-> [Pos]
-findItem _ [] = []
-findItem i (ip:ips)
-            | fst ip == i = snd ip: findItem i ips
-            | otherwise   = findItem i ips
+findItem wi  = map snd . filter (\x -> fst x == wi) 
 
-
-charToItem :: Char -> [(Char,WorldItems)] -> WorldItems
-charToItem c (cip:cips)
-            | c == fst cip = snd cip
-            | otherwise    = charToItem c cips 
+charToItem :: Char ->  WorldItems
+charToItem c = fromJust $ lookup c charItemPairs 
 
 main :: IO ()
 main = do
