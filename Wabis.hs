@@ -51,13 +51,14 @@ worldDim :: WorldCharMap -> (Int,Int)
 worldDim w = (length . head $ w,length w)
 
 worldCMToWorld :: WorldCharMap -> World
-worldCMToWorld  = liftM2 zip (concat . worldCMToItems) (concat . worldCMToPos) 
+worldCMToWorld  = liftM2 zip  worldCMToItems  worldCMToPos 
 
-worldCMToItems :: WorldCharMap -> [[WorldItems]]
-worldCMToItems =(map . map) charToItem 
+worldCMToItems :: WorldCharMap -> [WorldItems]
+worldCMToItems = concatMap . map $ charToItem 
 
-worldCMToPos :: WorldCharMap -> [[Pos]]
+worldCMToPos :: WorldCharMap -> [Pos]
 worldCMToPos  w = makeIndexedArray . worldDim $ w
+
 {-|
 makeIndexedArray' :: (Int,Int) -> [[Pos]]
 makeIndexedArray' (x,y) = zipWith indexHelper ys xs 
@@ -65,10 +66,10 @@ makeIndexedArray' (x,y) = zipWith indexHelper ys xs
                       ys = [1..y] 
 indexHelper :: Int -> [Int] -> [Pos]
 indexHelper y  = map (\x -> (x,y)) 
-
 -}
-makeIndexedArray :: (Int,Int) -> [[Pos]]
-makeIndexedArray (x,y) = zipUp ysxs 
+
+makeIndexedArray :: (Int,Int) -> [Pos]
+makeIndexedArray (x,y) = concat $ zipUp ysxs 
                     where xs = [1..x]
                           ys = [1..y]
                           xxs = replicate y xs
