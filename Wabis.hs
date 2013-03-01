@@ -58,14 +58,22 @@ worldCMToItems =(map . map) charToItem
 
 worldCMToPos :: WorldCharMap -> [[Pos]]
 worldCMToPos  w = makeIndexedArray . worldDim $ w
-
-makeIndexedArray :: (Int,Int) -> [[Pos]]
-makeIndexedArray (x,y) = zipWith indexHelper ys xs 
+{-|
+makeIndexedArray' :: (Int,Int) -> [[Pos]]
+makeIndexedArray' (x,y) = zipWith indexHelper ys xs 
                 where xs = replicate (fromIntegral y) [1..x]
                       ys = [1..y] 
-
 indexHelper :: Int -> [Int] -> [Pos]
 indexHelper y  = map (\x -> (x,y)) 
+
+-}
+makeIndexedArray :: (Int,Int) -> [[Pos]]
+makeIndexedArray (x,y) = zipUp ysxs 
+                    where xs = [1..x]
+                          ys = [1..y]
+                          xxs = replicate y xs
+                          ysxs = zip ys xxs
+                          zipUp = map (\t -> zip (snd t)(replicate (length (snd t))(fst t))  )
 
 findItem :: WorldItems -> World-> [Pos]
 findItem wi  = map snd . filter (\x -> fst x == wi) 
