@@ -1,4 +1,4 @@
-module Wabis where
+module Main where
 import Control.Monad (liftM2)
 import Data.Tuple (swap)
 import Data.Maybe (fromJust)
